@@ -1,1 +1,4 @@
-# This file is intentionally left blank.
+# Services for business logic
+from .incident_service import IncidentService
+
+__all__ = ["IncidentService"]

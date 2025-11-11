@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import get_settings
 from .core.database import engine, Base
+from .api.routes import events, incidents
 
 settings = get_settings()
 
@@ -49,6 +50,6 @@ def health_check():
     }
 
 
-# Routes will be added in next step
-# app.include_router(events.router, prefix="/api/v1", tags=["events"])
-# app.include_router(incidents.router, prefix="/api/v1", tags=["incidents"])
+# Include API routes
+app.include_router(events.router, prefix="/api/v1", tags=["Events"])
+app.include_router(incidents.router, prefix="/api/v1", tags=["Incidents"])

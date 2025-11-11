@@ -73,9 +73,40 @@ class IncidentService:
             self.db.commit()
             self.db.refresh(incident)
             
+            # Auto-analyze the incident with AI
+            self._auto_analyze_incident(incident)
+            
             return incident
         
         return None
+    
+    def _auto_analyze_incident(self, incident: Incident) -> None:
+        """
+        Automatically analyze incident using AI after creation.
+        
+        Args:
+            incident: The newly created incident
+        """
+        try:
+            from .ai_service import AIService
+            
+            ai_service = AIService()
+            analysis = ai_service.analyze_incident(incident)
+            
+            # Update incident with AI insights
+            incident.category = analysis.get("category")
+            incident.severity = analysis.get("severity")
+            incident.summary = analysis.get("summary")
+            incident.recommended_actions = analysis.get("recommended_actions")
+            
+            self.db.commit()
+            
+            print(f"✅ AI Analysis complete for incident #{incident.id}")
+            print(f"   Category: {incident.category}, Severity: {incident.severity}")
+            
+        except Exception as e:
+            print(f"⚠️  Auto-analysis failed for incident #{incident.id}: {e}")
+            # Don't fail the incident creation if AI analysis fails
     
     def get_open_incident_for_service(self, service: str) -> Optional[Incident]:
         """

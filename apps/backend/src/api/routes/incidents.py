@@ -10,6 +10,7 @@ from ...core.database import get_db
 from ...models.incident import Incident
 from ...schemas.incident import IncidentResponse, IncidentDetail
 from ...services.incident_service import IncidentService
+from ...services.ai_service import AIService
 
 router = APIRouter()
 
@@ -137,4 +138,65 @@ def update_incident_status(
         "message": "Incident status updated successfully",
         "incident_id": incident_id,
         "new_status": new_status
+    }
+
+
+@router.post("/incidents/{incident_id}/analyze")
+def analyze_incident(incident_id: int, db: Session = Depends(get_db)):
+    """
+    Trigger AI analysis for an incident.
+    
+    Uses AI to:
+    - Classify the incident category
+    - Assign severity (P1/P2/P3)
+    - Generate a human-readable summary
+    - Recommend remediation actions
+    
+    **Path Parameter:**
+    - `incident_id`: The incident ID
+    
+    **Example Response:**
+    ```json
+    {
+        "incident_id": 1,
+        "category": "database_issue",
+        "severity": "P1",
+        "summary": "Database connection pool exhausted...",
+        "recommended_actions": ["restart_db_service", "scale_db"],
+        "analysis_completed": true
+    }
+    ```
+    """
+    # Get incident with events
+    incident_service = IncidentService(db)
+    incident = incident_service.get_incident_with_events(incident_id)
+    
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Incident with id {incident_id} not found"
+        )
+    
+    # Initialize AI service
+    ai_service = AIService()
+    
+    # Analyze the incident
+    analysis = ai_service.analyze_incident(incident)
+    
+    # Update incident with AI analysis
+    incident.category = analysis.get("category")
+    incident.severity = analysis.get("severity")
+    incident.summary = analysis.get("summary")
+    incident.recommended_actions = analysis.get("recommended_actions")
+    
+    db.commit()
+    db.refresh(incident)
+    
+    return {
+        "incident_id": incident.id,
+        "category": incident.category,
+        "severity": incident.severity,
+        "summary": incident.summary,
+        "recommended_actions": incident.recommended_actions,
+        "analysis_completed": True
     }

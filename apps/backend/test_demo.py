@@ -91,6 +91,15 @@ def main():
         # Get detailed info
         detail = get_incident_detail(incident['id'])
         if detail:
+            # Show AI analysis if available
+            if detail.get('category'):
+                print(f"\n   🤖 AI Analysis:")
+                print(f"      Category: {detail['category']}")
+                print(f"      Severity: {detail['severity']}")
+                print(f"      Summary: {detail['summary']}")
+                if detail.get('recommended_actions'):
+                    print(f"      Actions: {', '.join(detail['recommended_actions'][:3])}")
+            
             print(f"\n   📝 Events in this incident:")
             for event in detail['events'][:3]:  # Show first 3
                 print(f"      - [{event['timestamp']}] {event['message'][:50]}...")

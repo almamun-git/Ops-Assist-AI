@@ -1,6 +1,3 @@
-import React from 'react';
-import Layout from './layout';
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -263,5 +260,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
-export default HomePage;

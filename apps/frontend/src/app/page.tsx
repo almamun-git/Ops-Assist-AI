@@ -39,6 +39,7 @@ export default function Dashboard() {
 
   const fetchIncidents = async () => {
     try {
+      console.log('Fetching from:', `${API_BASE_URL}/api/v1/incidents`)
       const response = await axios.get(`${API_BASE_URL}/api/v1/incidents`)
       const data = response.data
       setIncidents(data)

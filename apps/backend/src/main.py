@@ -22,13 +22,13 @@ app = FastAPI(
 )
 
 # Configure CORS
+# Note: Wildcards in origins don't work in FastAPI/Starlette
+# We use allow_origin_regex for pattern matching instead
+import re
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://*.vercel.app",   # Vercel preview and production
-        "https://*.railway.app",  # Railway deployments
-    ],
+    allow_origin_regex=r"https://.*\.vercel\.app|http://localhost:3000|https://.*\.railway\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

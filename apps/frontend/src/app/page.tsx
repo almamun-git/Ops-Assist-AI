@@ -5,8 +5,7 @@ import axios from 'axios'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import IncidentQuickActions from '../components/IncidentQuickActions'
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+import { getApiBase } from '../lib/api'
 
 interface Incident {
   id: number
@@ -40,8 +39,9 @@ export default function Dashboard() {
   }, [])
   const fetchIncidents = async (retryCount = 0) => {
     try {
-      console.log('Fetching from:', `${API_BASE_URL}/api/v1/incidents`)
-      const response = await axios.get(`${API_BASE_URL}/api/v1/incidents`, {
+      const base = getApiBase()
+      console.log('Fetching from:', `${base}/api/v1/incidents`)
+      const response = await axios.get(`${base}/api/v1/incidents`, {
         timeout: 60000, // 60 second timeout for cold starts
       })
       const data = response.data
@@ -77,14 +77,19 @@ export default function Dashboard() {
     setError(null)
     try {
       console.log('Waking up backend...')
-      await axios.get(`${API_BASE_URL}/health`, { timeout: 60000 })
+      const base = getApiBase()
+      // Try health first
+      await axios.get(`${base}/health`, { timeout: 60000 })
+      // Optionally hit root to further warm
+      try { await axios.get(`${base}/`, { timeout: 30000 }) } catch {}
       console.log('Backend is awake!')
       setWaking(false)
       fetchIncidents()
     } catch (err) {
       console.error('Error waking backend:', err)
       setWaking(false)
-      setError('Failed to wake up backend. Please try again.')
+      const base = getApiBase()
+      setError(`Failed to wake up backend at ${base}. Check API URL in settings or environment.`)
     }
   }
 

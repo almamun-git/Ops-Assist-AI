@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const DOCS_URL = `${API_BASE_URL.replace(/\/+$/, "")}/docs`;
+import { useEffect, useMemo, useState } from "react";
+import { getApiBase, getDocsUrl, getStoredApiBase, setStoredApiBase } from "../lib/api";
 
 export default function IncidentQuickActions() {
   const [service, setService] = useState("payment-service");
@@ -12,12 +10,27 @@ export default function IncidentQuickActions() {
   const [count, setCount] = useState(5);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [apiBaseInput, setApiBaseInput] = useState("");
+  const apiBase = useMemo(() => getApiBase(), []);
+  const docsUrl = useMemo(() => getDocsUrl(), [apiBase]);
+  const [useCustomBase, setUseCustomBase] = useState<boolean>(false);
+
+  useEffect(() => {
+    const stored = getStoredApiBase();
+    if (stored) {
+      setUseCustomBase(true);
+      setApiBaseInput(stored);
+    } else {
+      setApiBaseInput(apiBase);
+    }
+  }, [apiBase]);
 
   async function postEvent() {
     setBusy(true);
     setResult(null);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/events`, {
+  const base = getApiBase();
+  const res = await fetch(`${base}/api/v1/events`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ service, level, message }),
@@ -35,8 +48,9 @@ export default function IncidentQuickActions() {
     setBusy(true);
     setResult(null);
     try {
+      const base = getApiBase();
       const sends = Array.from({ length: count }).map((_, i) =>
-        fetch(`${API_BASE_URL}/api/v1/events`, {
+        fetch(`${base}/api/v1/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -61,7 +75,7 @@ export default function IncidentQuickActions() {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Quick Actions</h3>
         <a
-          href={DOCS_URL}
+          href={docsUrl}
           target="_blank"
           rel="noreferrer"
           className="text-sm text-blue-600 hover:underline"
@@ -69,6 +83,44 @@ export default function IncidentQuickActions() {
           API Docs ↗
         </a>
       </div>
+
+      {/* API Base configuration */}
+      <div className="flex flex-col md:flex-row md:items-center gap-2 text-sm">
+        <label className="text-gray-600">API URL</label>
+        <input
+          className="border rounded px-3 py-2 flex-1"
+          value={apiBaseInput}
+          onChange={(e) => setApiBaseInput(e.target.value)}
+          placeholder="https://your-backend-domain"
+        />
+        <button
+          className="px-3 py-2 bg-gray-100 rounded border text-gray-800"
+          onClick={() => {
+            const v = apiBaseInput.replace(/\/+$/, "");
+            setStoredApiBase(v);
+            setResult(`API base set to ${v}`);
+          }}
+        >
+          Save
+        </button>
+        <button
+          className="px-3 py-2 bg-white rounded border text-gray-600"
+          onClick={() => {
+            // Clear override to use env default
+            setStoredApiBase("");
+            try { localStorage.removeItem("opsai_api_base"); } catch {}
+            setApiBaseInput(getApiBase());
+            setResult("API base reset to default");
+          }}
+        >
+          Use default
+        </button>
+      </div>
+      {typeof window !== 'undefined' && window.location.hostname !== 'localhost' && apiBaseInput.includes('localhost') && (
+        <div className="text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded p-2">
+          Warning: Your API URL points to localhost, which won't work from a deployed site. Set your live backend URL above.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <input

@@ -22,88 +22,79 @@ Under the hood, it’s a full-stack app built with FastAPI, PostgreSQL, and a Ne
 - Real-time event ingestion and querying
 - Automatic incident detection (threshold + time window)
 - AI-powered classification (category, severity, summary, actions)
-- Incident lifecycle management: open → investigating → resolved → closed
-- Modern dashboard with incidents list and details
-- Ready for cloud deployment (Railway + Vercel + Supabase)
+# 🚀 Ops-Assist AI — Intelligent Incident Management
+
+Live (deployed):
+
+- API Base: https://ops-assist-ai.onrender.com/
+- API docs (OpenAPI / Swagger): https://ops-assist-ai.onrender.com/docs
+
+AI-assisted platform for detecting, grouping, and triaging production incidents. It ingests events, opens incidents when error spikes occur, runs AI analysis (category, severity, summary, and recommended actions), and provides a Next.js dashboard for triage and monitoring.
 
 ---
 
-## 🧱 Monorepo Structure
+## One-liner
 
-```
-ops-assist-ai
-├── apps
-│   ├── backend          # FastAPI backend (API + DB + AI service)
-│   └── frontend         # Next.js dashboard (React + TypeScript)
-├── packages
-│   └── shared           # Shared types
-├── RUNNING.md           # Detailed local run guide
-├── DEPLOYMENT.md        # Cloud deployment guide
-└── README.md            # You are here
-```
+Reduce MTTR with automated incident detection and AI triage — FastAPI backend, PostgreSQL data store, and a Next.js dashboard.
 
 ---
 
-## 🛠️ Tech Stack
+## Key features
 
-| Layer | Technology |
-|------|------------|
-| Frontend | Next.js 14 • React 18 • TypeScript • TailwindCSS |
-| Backend | FastAPI • SQLAlchemy • Uvicorn |
-| Database | PostgreSQL (local) • Supabase (hosted) |
-| AI | OpenAI API (with mock fallback) |
-| DevOps | Railway (backend) • Vercel (frontend) |
+- Real-time event ingestion and queryable event store
+- Automatic incident detection (threshold + sliding time window)
+- AI-driven analysis (category, severity, summary, suggested remediation)
+- Incident lifecycle and status updates (open → investigating → resolved → closed)
+- Web dashboard (list, filters, incident detail pages) and test utilities
+- Deployed on Render (backend) with live Swagger at `/docs`
 
 ---
 
-## 🧩 Architecture
+## Repo layout (high level)
 
 ```
-[ Services emit events/logs ]
-        │
-        ▼
-┌──────────────────────────────┐
-│ FastAPI Backend (Uvicorn)   │
-│  • /api/v1/events           │
-│  • /api/v1/incidents        │
-│  • AI classification        │
-│  • SQLAlchemy ORM           │
-└─────────────┬────────────────┘
-              │
-              ▼
-        [ PostgreSQL ]
-              │
-              ▼
-┌──────────────────────────────┐
-│ Next.js Frontend             │
-│  • Dashboard & Incidents     │
-│  • Filters & Status Updates  │
-└──────────────────────────────┘
+apps/
+  backend/   # FastAPI backend (src/, tests, scripts)
+  frontend/  # Next.js dashboard (TypeScript, Tailwind)
+packages/shared/ # shared types
+RUNNING.md
+DEPLOYMENT.md
+README.md
 ```
 
 ---
 
-## ⚙️ Quick Start
+## Tech stack
 
-See RUNNING.md for the complete guide. Below are the essentials for macOS/Linux shells.
+- Frontend: Next.js 14, React, TypeScript, TailwindCSS
+- Backend: FastAPI, SQLAlchemy (models), Uvicorn
+- DB: PostgreSQL (local) / Supabase (hosted)
+- AI: OpenAI API with deterministic mock fallback for local/dev
+- Deploy: Render / Vercel / Railway (deployment docs included)
+
+---
+
+## Quickstart (local)
 
 1) Clone
+
 ```bash
 git clone https://github.com/almamun-git/Ops-Assist-AI.git
 cd Ops-Assist-AI
 ```
 
-2) Backend (FastAPI)
+2) Backend
+
 ```bash
 cd apps/backend
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 
-# Create .env (values shown are examples)
-cat > .env << 'EOF'
-DATABASE_URL=postgresql://apu@localhost:5432/ops_assist_ai
-OPENAI_API_KEY=your-openai-api-key-or-empty
+# create .env (example)
+cat > .env <<'EOF'
+DATABASE_URL=postgresql://postgres@localhost:5432/ops_assist_ai
+OPENAI_API_KEY= # optional; leave empty to use mock
 INCIDENT_THRESHOLD=5
 INCIDENT_TIME_WINDOW=300
 EOF
@@ -111,89 +102,82 @@ EOF
 uvicorn src.main:app --reload --port 8000
 ```
 
-3) Frontend (Next.js)
+3) Frontend
+
 ```bash
 cd ../frontend
 npm install
 npm run dev
 ```
 
-- Backend: http://localhost:8000 (Docs at /docs)
+- Backend: http://localhost:8000 (interactive API docs at `/docs`)
 - Frontend: http://localhost:3000
 
 ---
 
-## 🔗 API Reference (selected)
+## API — quick reference
 
-Base URL: http://localhost:8000
+Deployed base: https://ops-assist-ai.onrender.com/
+
+Local base (when running locally): http://localhost:8000/
+
+Selected endpoints
 
 - Health
-  - GET `/health` → `{ "status": "healthy", "environment": "development" }`
+  - GET /health
+  - Response: { "status": "healthy", "environment": "development" }
 
 - Events
-  - POST `/api/v1/events`
-    - Body: `{ "service": "payment-service", "level": "ERROR", "message": "Database connection timeout" }`
-  - GET `/api/v1/events?service=auth-api&level=ERROR&limit=50`
+  - POST /api/v1/events
+    - Body example: { "service": "payment-service", "level": "ERROR", "message": "Database connection timeout" }
+  - GET /api/v1/events?service=service-name&level=ERROR&limit=50
 
 - Incidents
-  - GET `/api/v1/incidents?status_filter=open&limit=20`
-  - GET `/api/v1/incidents/{id}`
-  - PATCH `/api/v1/incidents/{id}/status` with `{ "status": "investigating" }`
-  - POST `/api/v1/incidents/{id}/analyze` (re-run AI analysis)
+  - GET /api/v1/incidents?status_filter=open&limit=20
+  - GET /api/v1/incidents/{id}
+  - PATCH /api/v1/incidents/{id}/status — body: { "status": "investigating" }
+  - POST /api/v1/incidents/{id}/analyze — re-run AI analysis for an incident
 
-Incident detection defaults: 5 ERROR events within 5 minutes for the same service will open a new incident (configurable via INCIDENT_THRESHOLD and INCIDENT_TIME_WINDOW).
+Detection rule (default): INCIDENT_THRESHOLD=5 and INCIDENT_TIME_WINDOW=300s → opens an incident when threshold reached for a service (configurable via env vars).
 
----
-
-## 💥 Example Scenarios (inspired by real ops)
-
-- E‑commerce
-  - payment-gateway • timeout_error • P1 → "Payment provider API timeout during checkout"
-  - inventory-service • data_sync • P2 → "Stock quantity not updating across warehouses"
-
-- Cloud/Infra
-  - k8s-controller • deployment_failure • P1 → "Pod CrashLoopBackOff for analytics-service"
-  - storage-service • disk_full • P1 → "Disk usage exceeded 95% on persistent volume"
-
----
-
-## 📚 Docs
-
-- Local run: see `RUNNING.md`
-- Deployment guides (Railway, Vercel, Supabase): see `DEPLOYMENT.md`
-
----
-
-## 🧪 Quick Test Snippets
-
-With the backend running:
+Example (list incidents — deployed):
 
 ```bash
-# Health
-curl http://localhost:8000/health
+curl -sS "https://ops-assist-ai.onrender.com/api/v1/incidents" -H "Accept: application/json"
+```
 
-# Create an ERROR event
+Example (create event — local):
+
+```bash
 curl -X POST http://localhost:8000/api/v1/events \
   -H "Content-Type: application/json" \
   -d '{"service":"payment-service","level":"ERROR","message":"Database connection timeout"}'
-
-# List incidents
-curl http://localhost:8000/api/v1/incidents
 ```
 
----
-
-## 👨‍💻 Author
-
-Abdullah Al Mamun Apu  
-Portfolio: https://mamunapu.tech • GitHub: https://github.com/almamun-git • LinkedIn: https://linkedin.com/in/almamun-in
+For the complete, interactive API spec visit the deployed docs: https://ops-assist-ai.onrender.com/docs
 
 ---
 
-## 📄 License
+## Notes for contributors / developers
 
-MIT — see LICENSE.
+- AI layer: If `OPENAI_API_KEY` is missing the code falls back to a deterministic/mock analyzer to allow offline testing.
+- Frontend reads the API base from a helper (`apps/frontend/src/lib/api.ts`) — update that or set the correct env when developing locally.
+- Tests and quick scripts: `apps/backend/test_api.sh`, `apps/backend/create_incidents.sh`, `apps/backend/test_demo.py` help exercise flows.
 
 ---
 
-"Built with ❤️ to make DevOps smarter."
+## Contributing
+
+PRs welcome. For docs updates, keep the README's API links in sync with the deployed `/docs` OpenAPI spec. See `DEPLOYMENT.md` and `RUNNING.md` for environment and deployment information.
+
+---
+
+## Author
+
+Abdullah Al Mamun Apu — https://github.com/almamun-git — https://mamunapu.tech
+
+---
+
+## License
+
+MIT

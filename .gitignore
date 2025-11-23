@@ -58,4 +58,4 @@ local_settings.py
 
 # Databases
 *.sqlite3
-test.db
+test.dbcoverage/

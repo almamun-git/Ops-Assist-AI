@@ -1,5 +1,10 @@
 # 🚀 Intelligent Incident Workflow Assistant
 
+[![CI](https://github.com/almamun-git/Intelligent-Incident-Workflow-Assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/almamun-git/Intelligent-Incident-Workflow-Assistant/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/almamun-git/Intelligent-Incident-Workflow-Assistant/actions/workflows/codeql.yml/badge.svg)](https://github.com/almamun-git/Intelligent-Incident-Workflow-Assistant/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/almamun-git/Intelligent-Incident-Workflow-Assistant/branch/main/graph/badge.svg)](https://codecov.io/gh/almamun-git/Intelligent-Incident-Workflow-Assistant)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 AI-powered platform for real-time incident detection, classification, and analytics.
 
 ---
@@ -22,31 +27,6 @@ Under the hood, it’s a full-stack app built with FastAPI, PostgreSQL, and a Ne
 - Real-time event ingestion and querying
 - Automatic incident detection (threshold + time window)
 - AI-powered classification (category, severity, summary, actions)
-# 🚀 Ops-Assist AI — Intelligent Incident Management
-
-Live (deployed):
-
-- API Base: https://ops-assist-ai.onrender.com/
-- API docs (OpenAPI / Swagger): https://ops-assist-ai.onrender.com/docs
-
-AI-assisted platform for detecting, grouping, and triaging production incidents. It ingests events, opens incidents when error spikes occur, runs AI analysis (category, severity, summary, and recommended actions), and provides a Next.js dashboard for triage and monitoring.
-
----
-
-## One-liner
-
-Reduce MTTR with automated incident detection and AI triage — FastAPI backend, PostgreSQL data store, and a Next.js dashboard.
-
----
-
-## Key features
-
-- Real-time event ingestion and queryable event store
-- Automatic incident detection (threshold + sliding time window)
-- AI-driven analysis (category, severity, summary, suggested remediation)
-- Incident lifecycle and status updates (open → investigating → resolved → closed)
-- Web dashboard (list, filters, incident detail pages) and test utilities
-- Deployed on Render (backend) with live Swagger at `/docs`
 
 ---
 
@@ -79,8 +59,8 @@ README.md
 1) Clone
 
 ```bash
-git clone https://github.com/almamun-git/Ops-Assist-AI.git
-cd Ops-Assist-AI
+git clone https://github.com/almamun-git/Intelligent-Incident-Workflow-Assistant.git
+cd Intelligent-Incident-Workflow-Assistant
 ```
 
 2) Backend

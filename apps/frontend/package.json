@@ -32,6 +32,12 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/*.stories.{js,jsx,ts,tsx}",
+      "!src/**/__tests__/**"
+    ],
     "coverageThreshold": {
       "global": {
         "branches": 65,
